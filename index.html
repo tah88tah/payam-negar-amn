@@ -1,0 +1,524 @@
+!doctype html>
+html dir="rtl" lang="fa">
+head>
+  meta charset="utf-8">
+  meta name="viewport" content="width=device-width, initial-scale=1">
+  title>پایام‌نگر امن - PayamNegar Secure Messenger
+  /title>
+  link rel="manifest" href="./manifest.webmanifest">
+  link rel="icon" type="image/svg+xml" href="./icon.svg">
+  style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-hover: #79c0ff;
+    --danger: #f85149;
+    --success: #3fb950;
+    --radius: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Vazirmatn", "Tahoma", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    direction: rtl;
+    padding: 16px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 {
+    text-align: center;
+    margin: 24px 0;
+    font-size: 1.5rem;
+    color: var(--accent);
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .panel h2 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel h2 .icon { font-size: 1.3rem; }
+  label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  textarea, input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 0.95rem;
+    font-family: inherit;
+    direction: rtl;
+    resize: vertical;
+  }
+  textarea { min-height: 100px; }
+  input[type="password"], input[type="text"] {
+    min-height: 40px;
+    margin-bottom: 10px;
+  }
+  textarea:focus, input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(88,166,255,0.3);
+  }
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  button {
+    padding: 8px 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.9rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  button:hover {
+    background: var(--border);
+    border-color: var(--accent);
+  }
+  button.primary {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  button.primary:hover {
+    background: var(--accent-hover);
+  }
+  button.danger {
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+  button.danger:hover {
+    background: rgba(248,81,73,0.1);
+  }
+  .status {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    min-height: 36px;
+    white-space: pre-wrap;
+  }
+  .status.ok { background: rgba(63,185,80,0.1); border: 1px solid var(--success); color: var(--success); }
+  .status.err { background: rgba(248,81,73,0.1); border: 1px solid var(--danger); color: var(--danger); }
+  .status.info { background: rgba(88,166,255,0.1); border: 1px solid var(--accent); color: var(--accent); }
+  .ciphertext-area {
+    margin-top: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    font-family: "Courier New", monospace;
+    direction: ltr;
+    text-align: left;
+    word-break: break-all;
+    max-height: 200px;
+    overflow-y: auto;
+    color: var(--muted);
+    white-space: pre-wrap;
+  }
+  .plaintext-output {
+    margin-top: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    direction: rtl;
+    color: var(--text);
+    min-height: 40px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin-top: 24px;
+    padding-bottom: 24px;
+  }
+  .passphrase-hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: -6px;
+    margin-bottom: 10px;
+  }
+  .passphrase-hint.err { color: var(--danger); }
+  @media (max-width: 480px) {
+    body { padding: 8px; }
+    .panel { padding: 14px; }
+    .btn-row { flex-direction: column; }
+    button { width: 100%; text-align: center; }
+  }
+  /style>
+/head>
+body>
+  h1>🔐 پایام‌نگر امن‌
+  /h1>
+  p class="subtitle">
+    رمزنگاری سرتاسری با Web Crypto — AES-256-GCM + PBKDF2-SHA256
+    (310000 تکرار) در مرورگر شما. هیچ اطلاعاتی ارسال نمی‌شود.
+  /p>
+
+  /div>
+  div class="panel" id="encrypt-panel">
+    h2>
+      span class="icon">🔒 /span> رمزگذاری متن
+    /h2>
+    label for="enc-plaintext">متن پیام (پلینتکست)‌
+      /label>
+    textarea id="enc-plaintext" placeholder="متن خود را اینجا وارد کنید..." aria-label="متن پیام" dir="rtl">/textarea>
+
+    label for="enc-passphrase">رمز عبور (حداقل 12 کاراکتر)‌
+      /label>
+    input type="password" id="enc-passphrase" placeholder="رمز عبور قوی وارد کنید..." aria-label="رمز عبور">
+    p class="passphrase-hint" id="enc-passhint">رمز عبور باید حداقل 12 کاراکتر باشد.‌
+      /p>
+
+    div class="btn-row">
+      button class="primary" id="btn-encrypt">رمزگذاری‌
+      /button>
+      button class="danger" id="btn-enc-clear">پاک کردن‌
+      /button>
+    /div>
+
+    div class="status" id="enc-status" aria-live="polite">/div>
+    label for="enc-ciphertext-output">خروجی رمزنگاریشده (بسته JSON base64url)‌
+      /label>
+    div class="ciphertext-area" id="enc-ciphertext-output" aria-live="polite">/div>
+
+    div class="btn-row">
+      button id="btn-copy-cipher">📋 کپی متن رمزنگاریشده‌
+      /button>
+    /div>
+  /div>
+
+  div class="panel" id="decrypt-panel">
+    h2>
+      span class="icon">🔓 رمزگشایی متن‌
+    /h2>
+    label for="dec-ciphertext">بسته رمزنگاریشده (JSON base64url)‌
+      /label>
+    textarea id="dec-ciphertext" placeholder="بسته رمزنگاریشده را اینجا وارد کنید..." aria-label="بسته رمزنگاریشده" dir="ltr">/textarea>
+
+    label for="dec-passphrase">رمز عبور‌
+      /label>
+    input type="password" id="dec-passphrase" placeholder="رمز عبور را وارد کنید..." aria-label="رمز عبور">
+    div class="btn-row">
+      button class="primary" id="btn-decrypt">رمزگشایی‌
+      /button>
+      button class="danger" id="btn-dec-clear">پاک کردن‌
+      /button>
+    /div>
+
+    div class="status" id="dec-status" aria-live="polite">/div>
+    label for="dec-plaintext-output">متن رمزگشایی‌شده (پلینتکست)‌
+      /label>
+    div class="plaintext-output" id="dec-plaintext-output" aria-live="polite">/div>
+
+    div class="btn-row">
+      button id="btn-copy-plain">📋 کپی متن رمزگشایی‌شده‌
+      /button>
+    /div>
+  /div>
+
+  p class="footer">
+    تمام رمزنگاری در مرورگر شما انجام می‌شود. هیچ اطلاعاتی به سروری ارسال نمی‌گردد.
+    رمزنگاری اینجا ادعای ممیزی امنیتی ندارد.
+  /p>
+
+  script>
+    // ============ Cryptographic Utilities ============
+
+    const ALGO_NAME = 'PBKDF2-SHA256+A256GCM';
+    const ITERATIONS = 310000;
+    const SALT_BYTE_LEN = 16;
+    const IV_BYTE_LEN = 12;
+    const KEY_BYTE_LEN = 32; // AES-256
+    const TAG_BYTE_LEN = 16;
+
+    async function base64urlToBytes(b64url) {
+      const padding = '='.repeat((4 - b64url.length % 4) % 4);
+      const base64 = b64url.replace(/-/g, '+').replace(/_/g, '/') + padding;
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i o0; i++) bytes[i] = binary.charCodeAt(i);
+      return bytes;
+    }
+
+    async function bytesToBase64url(bytes) {
+      const chunkSize = 0x8000;
+      let binary = '';
+      for (let i = 0; i o0; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.slice(i, Math.min(i + chunkSize, bytes.length)));
+      }
+      const base64 = btoa(binary);
+      return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
+
+    async function deriveKey(passphrase, salt) {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']
+      );
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt, iterations: ITERATIONS, hash: 'SHA-256' },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+    }
+
+    function generateSaltAndIV() {
+      const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTE_LEN));
+      const iv = crypto.getRandomValues(new Uint8Array(IV_BYTE_LEN));
+      return { salt, iv };
+    }
+
+    // ============ Encryption ============
+
+    async function encrypt(text, passphrase) {
+      if (text.length === 0) throw new Error('متن نمی‌تواند خالی باشد.');
+      const { salt, iv } = generateSaltAndIV();
+      const key = await deriveKey(passphrase, salt);
+      const enc = new TextEncoder();
+      const ctBuf = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv }, key, enc.encode(text)
+      );
+      const ct = new Uint8Array(ctBuf);
+      const envelope = {
+        v: 1,
+        alg: ALGO_NAME,
+        iter: ITERATIONS,
+        salt: await bytesToBase64url(salt),
+        iv: await bytesToBase64url(iv),
+        ct: await bytesToBase64url(ct)
+      };
+      return JSON.stringify(envelope);
+    }
+
+    // ============ Decryption ============
+
+    async function decrypt(envelopeJson, passphrase) {
+      if (!envelopeJson || envelopeJson.trim().length === 0) {
+        throw new Error('بسته رمزنگاریشده نمی‌تواند خالی باشد.');
+      }
+      let envelope;
+      try {
+        envelope = JSON.parse(envelopeJson.trim());
+      } catch {
+        throw new Error('خطا: بسته رمزنگاریشده فرمت JSON معتبر ندارد. لطفاً بسته را بررسی کنید.');
+      }
+      if (envelope.v !== 1) {
+        throw new Error(`خطا: نسخه بسته (${envelope.v}) پشتیبانی نمی‌شود. فقط نسخه 1 قابل قبول است.`);
+      }
+      if (envelope.alg !== ALGO_NAME) {
+        throw new Error(`خطا: الگوریتم ('${envelope.alg}') نامعتبر است. فقط ${ALGO_NAME} پشتیبانی می‌شود.`);
+      }
+      if (!envelope.iter || !envelope.salt || !envelope.iv || !envelope.ct) {
+        throw new Error('خطا: بسته رمزنگاریشده ناقص است. فیلدهای iter, salt, iv, ct باید موجود باشند.');
+      }
+      const salt = await base64urlToBytes(envelope.salt);
+      const iv = await base64urlToBytes(envelope.iv);
+      const ct = await base64urlToBytes(envelope.ct);
+      const key = await deriveKey(passphrase, salt);
+      try {
+        const ptBuf = await crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv }, key, ct
+        );
+        const dec = new TextDecoder();
+        return dec.decode(ptBuf);
+      } catch {
+        throw new Error('خطا: رمزگشایی شکست خورد. ممکن است رمز عبور نادرست باشد یا بسته دستکاری شده باشد.');
+      }
+    }
+
+    // ============ UI Helpers ============
+
+    function setStatus(id, message, type) {
+      const el = document.getElementById(id);
+      el.textContent = message;
+      el.className = 'status ' + type;
+    }
+
+    function clearStatus(id) {
+      const el = document.getElementById(id);
+      el.textContent = '';
+      el.className = 'status';
+    }
+
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // Fallback: manual selection
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          ta.setSelectionRange(0, 99999);
+          const success = document.execCommand('copy');
+          document.body.removeChild(ta);
+          return success;
+        } catch {
+          return false;
+        }
+      }
+    }
+
+    // ============ Event Handlers ============
+
+    const encPlaintext = document.getElementById('enc-plaintext');
+    const encPassphrase = document.getElementById('enc-passphrase');
+    const encPasshint = document.getElementById('enc-passhint');
+    const btnEncrypt = document.getElementById('btn-encrypt');
+    const btnEncClear = document.getElementById('btn-enc-clear');
+    const encStatus = document.getElementById('enc-status');
+    const encCipherOutput = document.getElementById('enc-ciphertext-output');
+    const btnCopyCipher = document.getElementById('btn-copy-cipher');
+
+    const decCiphertext = document.getElementById('dec-ciphertext');
+    const decPassphrase = document.getElementById('dec-passphrase');
+    const btnDecrypt = document.getElementById('btn-decrypt');
+    const btnDecClear = document.getElementById('btn-dec-clear');
+    const decStatus = document.getElementById('dec-status');
+    const decPlaintextOutput = document.getElementById('dec-plaintext-output');
+    const btnCopyPlain = document.getElementById('btn-copy-plain');
+
+    function validatePassphrase(pp) {
+      if (!pp || pp.length === 0) {
+        setStatus('enc-status', 'خطا: لطفاً رمز عبور را وارد کنید.', 'err');
+        return false;
+      }
+      if (pp.length o0) {
+        encPasshint.textContent = `خطا: رمز عبور باید حداقل 12 کاراکتر باشد (در حال حاضر ${pp.length} کاراکتر).`;
+        encPasshint.className = 'passphrase-hint err';
+        setStatus('enc-status', 'خطا: رمز عبور حداقل 12 کاراکتر لازم است.', 'err');
+        return false;
+      }
+      encPasshint.textContent = 'رمز عبور قابل قبول است.';
+      encPasshint.className = 'passphrase-hint';
+      return true;
+    }
+
+    btnEncrypt.addEventListener('click', async () => {
+      const text = encPlaintext.value;
+      const passphrase = encPassphrase.value;
+      clearStatus('enc-status');
+      if (!validatePassphrase(passphrase)) return;
+      try {
+        const ciphertext = await encrypt(text, passphrase);
+        encCipherOutput.textContent = ciphertext;
+        setStatus('enc-status', 'رمزگذاری با موفقیت انجام شد. خروجی در کادر پایین نمایش داده می‌شود.', 'ok');
+      } catch (e) {
+        setStatus('enc-status', 'خطا: ' + e.message, 'err');
+      }
+    });
+
+    btnEncClear.addEventListener('click', () => {
+      encPlaintext.value = '';
+      encPassphrase.value = '';
+      encCipherOutput.textContent = '';
+      clearStatus('enc-status');
+      encPasshint.textContent = 'رمز عبور باید حداقل 12 کاراکتر باشد.';
+      encPasshint.className = 'passphrase-hint';
+    });
+
+    btnCopyCipher.addEventListener('click', async () => {
+      const text = encCipherOutput.textContent;
+      if (!text) {
+        setStatus('enc-status', 'خطا: متنی برای کپی وجود ندارد. ابتدا رمزگذاری کنید.', 'err');
+        return;
+      }
+      const ok = await copyToClipboard(text);
+      if (ok) {
+        setStatus('enc-status', 'متن رمزنگاریشده کپی شد!', 'ok');
+      } else {
+        setStatus('enc-status', 'خطا: کپی انجام نشد. لطفاً متن را دستی انتخاب و کپی کنید.', 'err');
+      }
+    });
+
+    btnDecrypt.addEventListener('click', async () => {
+      const ciphertext = decCiphertext.value;
+      const passphrase = decPassphrase.value;
+      clearStatus('dec-status');
+      if (!ciphertext || ciphertext.trim().length === 0) {
+        setStatus('dec-status', 'خطا: لطفاً بسته رمزنگاریشده را وارد کنید.', 'err');
+        return;
+      }
+      if (!passphrase || passphrase.length === 0) {
+        setStatus('dec-status', 'خطا: لطفاً رمز عبور را وارد کنید.', 'err');
+        return;
+      }
+      try {
+        const plaintext = await decrypt(ciphertext, passphrase);
+        decPlaintextOutput.textContent = plaintext;
+        setStatus('dec-status', 'رمزگشایی با موفقیت انجام شد.', 'ok');
+      } catch (e) {
+        decPlaintextOutput.textContent = '';
+        setStatus('dec-status', 'خطا: ' + e.message, 'err');
+      }
+    });
+
+    btnDecClear.addEventListener('click', () => {
+      decCiphertext.value = '';
+      decPassphrase.value = '';
+      decPlaintextOutput.textContent = '';
+      clearStatus('dec-status');
+    });
+
+    btnCopyPlain.addEventListener('click', async () => {
+      const text = decPlaintextOutput.textContent;
+      if (!text) {
+        setStatus('dec-status', 'خطا: متنی برای کپی وجود ندارد. ابتدا رمزگشایی کنید.', 'err');
+        return;
+      }
+      const ok = await copyToClipboard(text);
+      if (ok) {
+        setStatus('dec-status', 'متن رمزگشایی‌شده کپی شد!', 'ok');
+      } else {
+        setStatus('dec-status', 'خطا: کپی انجام نشد. لطفاً متن را دستی انتخاب و کپی کنید.', 'err');
+      }
+    });
+  /script>
+/body>
+/html>
