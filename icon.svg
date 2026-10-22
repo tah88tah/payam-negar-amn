@@ -1,10 +1,8 @@
-&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"&gt;
-  &lt;title&gt;پیام‌نگار امن App Icon&lt;/title&gt;
-  &lt;rect width="512" height="512" fill="#12233f" rx="60"/&gt;
-  &lt;g transform="translate(156, 120)"&gt;
-    &lt;rect x="40" y="120" width="272" height="200" rx="20" fill="#daa520"/&gt;
-    &lt;path d="M80,120 L80,60 A80,80 0 0,1 240,60 L240,120" fill="none" stroke="#daa520" stroke-width="32"/&gt;
-    &lt;circle cx="160" cy="220" r="28" fill="#12233f"/&gt;
-    &lt;rect x="156" y="220" width="8" height="40" fill="#12233f"/&gt;
-  &lt;/g&gt;
-&lt;/svg&gt;
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>پیام‌نگار امن</title>
+  <rect width="512" height="512" rx="72" fill="#12233f"/>
+  <rect x="104" y="222" width="304" height="214" rx="38" fill="#d6ad55"/>
+  <path d="M166 222v-58c0-50 40-90 90-90s90 40 90 90v58h-42v-58c0-27-21-48-48-48s-48 21-48 48v58z" fill="#f8e7b4"/>
+  <circle cx="256" cy="318" r="25" fill="#12233f"/>
+  <path d="M244 335h24l12 44h-48z" fill="#12233f"/>
+</svg>
