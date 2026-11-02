@@ -20,13 +20,26 @@ public final class PhoneNumbers {
 
     /** Converts valid Iranian mobile formats to canonical +98XXXXXXXXXX. */
     public static String toIranInternational(String value) {
-        String digits = normalize(value);
-        if (digits.startsWith("0098")) digits = digits.substring(2);
-        if (digits.startsWith("98")) {
-            return digits.matches("989[0-9]{9}") ? "+" + digits : "";
+        if (value == null) return "";
+        String compact = value.trim().replace(" ", "").replace("-", "")
+                .replace("(", "").replace(")", "").replace(".", "");
+        StringBuilder ascii = new StringBuilder();
+        for (int i = 0; i < compact.length(); i++) {
+            char ch = compact.charAt(i);
+            if (ch >= '\u06f0' && ch <= '\u06f9') ch = (char) ('0' + ch - '\u06f0');
+            else if (ch >= '\u0660' && ch <= '\u0669') ch = (char) ('0' + ch - '\u0660');
+            ascii.append(ch);
         }
-        if (digits.matches("09[0-9]{9}")) return "+98" + digits.substring(1);
-        if (digits.matches("9[0-9]{9}")) return "+98" + digits;
+        String number = ascii.toString();
+        if (number.startsWith("+")) {
+            number = number.substring(1);
+        } else if (number.startsWith("00")) {
+            number = number.substring(2);
+        }
+        if (!number.matches("[0-9]+")) return "";
+        if (number.matches("989[0-9]{9}")) return "+" + number;
+        if (number.matches("09[0-9]{9}")) return "+98" + number.substring(1);
+        if (number.matches("9[0-9]{9}")) return "+98" + number;
         return "";
     }
 
