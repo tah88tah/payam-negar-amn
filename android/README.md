@@ -159,3 +159,5 @@ java -cp build/pure-test ir.tahmuresi.payamnegar.PureJavaSelfTest
 ## CI
 
 با هر تغییر در پوشهٔ `android/`، گردش‌کار GitHub Actions برای تست و ساخت APK آزمایشی اجرا می‌شود.
+
+<!-- CI retrigger -->
