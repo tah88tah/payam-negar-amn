@@ -47,7 +47,12 @@ public final class PureJavaSelfTest {
         require(PhoneNumbers.normalize("+۹۸ ۹۱۲-۳۴۵-۶۷۸۹").equals("989123456789"), "Persian digits normalization failed");
         require(PhoneNumbers.looksLikeInternationalNumber("+989123456789"), "Valid international number rejected");
         require(PhoneNumbers.looksLikeInternationalNumber("+۹۸۹۱۲۳۴۵۶۷۸۹"), "Persian international digits should be accepted");
-        require(!PhoneNumbers.looksLikeInternationalNumber("09123456789"), "National-only number should require country code");
+        require(PhoneNumbers.toIranInternational("09123456789").equals("+989123456789"), "Iranian national mobile conversion failed");
+        require(PhoneNumbers.toIranInternational("9123456789").equals("+989123456789"), "Mobile without leading zero conversion failed");
+        require(PhoneNumbers.toIranInternational("00989123456789").equals("+989123456789"), "00-prefixed conversion failed");
+        require(PhoneNumbers.toIranInternational("0912 345 6789").equals("+989123456789"), "Formatted mobile conversion failed");
+        require(!PhoneNumbers.looksLikeInternationalNumber("02112345678"), "Iranian landline must be rejected");
+        require(!PhoneNumbers.looksLikeInternationalNumber("0912345678"), "Short mobile number must be rejected");
         require(!PhoneNumbers.looksLikeInternationalNumber("++989123456789"), "Malformed number must be rejected");
         require(!PhoneNumbers.looksLikeInternationalNumber("+0989123456789"), "Country code cannot begin with zero");
 
