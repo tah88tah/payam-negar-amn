@@ -36,6 +36,8 @@ import java.util.concurrent.Executors;
 
 public final class MainActivity extends Activity {
     private static final int REQUEST_APP_PERMISSIONS = 5101;
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 5102;
+    private static final String PREF_NOTIFICATION_PROMPTED = "notification_permission_prompted";
     private static final int NAVY = Color.rgb(39, 52, 49);
     private static final int GOLD = Color.rgb(166, 106, 76);
     private static final int PAGE = Color.rgb(244, 241, 235);
@@ -243,8 +245,10 @@ public final class MainActivity extends Activity {
 
     private void requestNotificationPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT >= 33
-                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 5102);
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                && !getPreferences(MODE_PRIVATE).getBoolean(PREF_NOTIFICATION_PROMPTED, false)) {
+            getPreferences(MODE_PRIVATE).edit().putBoolean(PREF_NOTIFICATION_PROMPTED, true).apply();
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_PERMISSION);
         }
     }
 
@@ -276,7 +280,7 @@ public final class MainActivity extends Activity {
                 toast("مجوزهای SMS کامل نیستند؛ برای ادامه راهنمای فعال‌سازی را ببین.");
                 showSmsPermissionHelp();
             }
-        } else if (requestCode == 5102) {
+        } else if (requestCode == REQUEST_NOTIFICATION_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 toast("اعلان‌های دریافت پیام فعال شدند.");
             } else {
