@@ -8,6 +8,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
+import android.provider.ContactsContract;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -37,6 +41,7 @@ import java.util.concurrent.Executors;
 public final class MainActivity extends Activity {
     private static final int REQUEST_APP_PERMISSIONS = 5101;
     private static final int REQUEST_NOTIFICATION_PERMISSION = 5102;
+    private static final int REQUEST_PICK_CONTACT = 5103;
     private static final String PREF_NOTIFICATION_PROMPTED = "notification_permission_prompted";
     private static final int NAVY = Color.rgb(39, 52, 49);
     private static final int GOLD = Color.rgb(166, 106, 76);
@@ -59,6 +64,7 @@ public final class MainActivity extends Activity {
 
     private EditText peerPhoneInput;
     private TextView contactPicker;
+    private boolean updatingPhoneField;
     private EditText passphraseInput;
     private EditText messageInput;
     private TextView sessionText;
@@ -86,9 +92,20 @@ public final class MainActivity extends Activity {
         root.setBackgroundColor(NAVY);
         root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
 
-        TextView header = text("🔐 پیام‌نگار امن", 20, Color.WHITE, true);
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
+        header.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+        header.setPadding(dp(14), dp(8), dp(14), dp(8));
         header.setBackgroundColor(NAVY);
-        header.setPadding(dp(16), dp(12), dp(16), dp(12));
+        TextView settings = text("⚙", 24, Color.WHITE, true);
+        settings.setGravity(Gravity.CENTER);
+        settings.setContentDescription("تنظیمات");
+        settings.setOnClickListener(v -> showSettings());
+        header.addView(settings, new LinearLayout.LayoutParams(dp(44), dp(44)));
+        TextView title = text("🔐 پیام‌نگار امن", 19, Color.WHITE, true);
+        title.setGravity(Gravity.CENTER_VERTICAL | Gravity.RIGHT);
+        header.addView(title, new LinearLayout.LayoutParams(0, -2, 1f));
         root.addView(header, new LinearLayout.LayoutParams(-1, -2));
 
         chatScroll = new ScrollView(this);
@@ -126,29 +143,32 @@ public final class MainActivity extends Activity {
         row.setPadding(dp(10), dp(8), dp(10), dp(8));
         row.setBackground(round(Color.WHITE, 12, 0xffdedbd3, 1));
 
-        contactPicker = text("لیست مخاطبین", 12, NAVY, true);
-        contactPicker.setGravity(Gravity.CENTER);
-        contactPicker.setPadding(dp(7), 0, dp(7), 0);
-        contactPicker.setBackground(round(0xffeeeae2, 8, 0xffdedbd3, 1));
-        contactPicker.setOnClickListener(v -> {
-            String savedPhone = AppPrefs.peerPhone(this);
-            if (!savedPhone.isEmpty()) peerPhoneInput.setText(savedPhone);
-            contactPicker.setText(AppPrefs.peerName(this));
-        });
-        row.addView(contactPicker, new LinearLayout.LayoutParams(dp(104), dp(44)));
-
-        Button add = button("+", false);
-        add.setTextSize(20);
-        add.setOnClickListener(v -> savePeerSettings());
-        LinearLayout.LayoutParams addParams = new LinearLayout.LayoutParams(dp(46), dp(44));
-        addParams.setMargins(dp(6), 0, dp(6), 0);
-        row.addView(add, addParams);
-
-        peerPhoneInput = edit("شمارهٔ مستقیم با کد کشور", InputType.TYPE_CLASS_PHONE);
+        peerPhoneInput = edit("شماره موبایل مخاطب", InputType.TYPE_CLASS_PHONE);
         peerPhoneInput.setSingleLine(true);
         peerPhoneInput.setTextDirection(View.TEXT_DIRECTION_LTR);
         peerPhoneInput.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
         row.addView(peerPhoneInput, new LinearLayout.LayoutParams(0, dp(44), 1f));
+        peerPhoneInput.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) savePeerSettings(false);
+        });
+        peerPhoneInput.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
+            @Override public void afterTextChanged(Editable value) {
+                if (updatingPhoneField) return;
+                String canonical = PhoneNumbers.toIranInternational(value.toString());
+                if (!canonical.isEmpty()) AppPrefs.savePeer(MainActivity.this, AppPrefs.peerName(MainActivity.this), canonical);
+            }
+        });
+
+        contactPicker = text("👤", 23, NAVY, true);
+        contactPicker.setGravity(Gravity.CENTER);
+        contactPicker.setContentDescription("انتخاب مخاطب از دفترچه تلفن");
+        contactPicker.setBackground(round(0xffeeeae2, 8, 0xffdedbd3, 1));
+        contactPicker.setOnClickListener(v -> openContactPicker());
+        LinearLayout.LayoutParams contactParams = new LinearLayout.LayoutParams(dp(46), dp(44));
+        contactParams.setMargins(dp(7), 0, 0, 0);
+        row.addView(contactPicker, contactParams);
         return row;
     }
 
@@ -207,20 +227,83 @@ public final class MainActivity extends Activity {
         return composer;
     }
 
-    private void savePeerSettings() {
-        String phone = peerPhoneInput.getText().toString().trim().replace(" ", "");
-        if (!PhoneNumbers.looksLikeInternationalNumber(phone)) {
-            toast("شماره را با + و کد کشور وارد کن؛ مثلاً قالب بین‌المللی.");
+    private void savePeerSettings() { savePeerSettings(true); }
+
+    private void savePeerSettings(boolean showError) {
+        String raw = peerPhoneInput.getText().toString();
+        String phone = PhoneNumbers.toIranInternational(raw);
+        if (!PhoneNumbers.isValidIranNumber(phone)) {
+            if (showError && !raw.trim().isEmpty()) toast("شمارهٔ موبایل ایران معتبر نیست.");
             return;
         }
         AppPrefs.savePeer(this, AppPrefs.peerName(this), phone);
-        if (contactPicker != null) contactPicker.setText(AppPrefs.peerName(this));
-        toast("شمارهٔ مخاطب ذخیره شد.");
+        if (!phone.equals(raw)) {
+            updatingPhoneField = true;
+            peerPhoneInput.setText(phone);
+            peerPhoneInput.setSelection(peerPhoneInput.length());
+            updatingPhoneField = false;
+        }
     }
 
     private void loadPeerSettings() {
+        updatingPhoneField = true;
         peerPhoneInput.setText(AppPrefs.peerPhone(this));
-        if (contactPicker != null) contactPicker.setText(AppPrefs.peerName(this));
+        updatingPhoneField = false;
+    }
+
+    private void openContactPicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+        try { startActivityForResult(intent, REQUEST_PICK_CONTACT); }
+        catch (RuntimeException ex) { toast("دفترچهٔ مخاطبین در دسترس نیست."); }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != REQUEST_PICK_CONTACT || resultCode != RESULT_OK || data == null || data.getData() == null) return;
+        Cursor cursor = null;
+        try {
+            cursor = getContentResolver().query(data.getData(),
+                    new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME},
+                    null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                String phone = PhoneNumbers.toIranInternational(cursor.getString(0));
+                String name = cursor.getString(1);
+                if (!PhoneNumbers.isValidIranNumber(phone)) {
+                    toast("شمارهٔ انتخاب‌شده، شمارهٔ موبایل معتبر ایران نیست.");
+                    return;
+                }
+                AppPrefs.savePeer(this, name, phone);
+                updatingPhoneField = true;
+                peerPhoneInput.setText(phone);
+                updatingPhoneField = false;
+            }
+        } catch (RuntimeException ex) {
+            toast("خواندن شمارهٔ مخاطب ممکن نشد.");
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+    }
+
+    private void showSettings() {
+        new AlertDialog.Builder(this).setTitle("تنظیمات")
+                .setItems(new String[]{"بستر ارتباطی", "تم"}, (dialog, which) -> {
+                    if (which == 0) {
+                        new AlertDialog.Builder(this).setTitle("بستر ارتباطی")
+                                .setSingleChoiceItems(new String[]{"SMS  ·  فعال", "اینترنت  ·  به‌زودی"}, 0,
+                                        (d, selected) -> {
+                                            if (selected == 1) toast("ارتباط اینترنتی در نسخهٔ فعلی فعال نیست.");
+                                            d.dismiss();
+                                        }).setNegativeButton("بستن", null).show();
+                    } else {
+                        new AlertDialog.Builder(this).setTitle("تم")
+                                .setSingleChoiceItems(new String[]{"سیستم / پیش‌فرض  ·  به‌زودی", "روشن  ·  فعلی", "تاریک  ·  به‌زودی"}, 1,
+                                        (d, selected) -> {
+                                            if (selected != 1) toast("انتخاب تم در نسخهٔ فعلی هنوز فعال نیست.");
+                                            d.dismiss();
+                                        }).setNegativeButton("بستن", null).show();
+                    }
+                }).show();
     }
 
     private boolean hasSmsPermissions() {
@@ -347,10 +430,12 @@ public final class MainActivity extends Activity {
             toast("اول متن پیام را بنویس.");
             return;
         }
-        if (!PhoneNumbers.looksLikeInternationalNumber(phone)) {
-            toast("اول شمارهٔ مخاطب را ذخیره کن.");
+        String canonicalPhone = PhoneNumbers.toIranInternational(phone);
+        if (!PhoneNumbers.isValidIranNumber(canonicalPhone)) {
+            toast("شمارهٔ موبایل ایران را وارد یا از مخاطبین انتخاب کن.");
             return;
         }
+        AppPrefs.savePeer(this, AppPrefs.peerName(this), canonicalPhone);
         if (!hasSmsPermissions()) {
             toast("برای استفادهٔ کامل، مجوز ارسال و دریافت پیامک لازم است.");
             requestAppPermissions();
@@ -364,15 +449,11 @@ public final class MainActivity extends Activity {
                 String messageId = SmsPacketProtocol.newMessageId();
                 List<String> frames = SmsPacketProtocol.split(packet, messageId);
                 runOnUiThread(() -> {
-                    messageInput.setEnabled(true);
-                    if (!activityStarted || isFinishing() || !key.equals(sessionPassphrase)) return;
-                    new AlertDialog.Builder(this)
-                            .setTitle("تأیید ارسال پیام")
-                            .setMessage("این پیام به " + frames.size() + " پیامک جداگانه تقسیم می‌شود. هزینهٔ ارسال طبق تعرفهٔ اپراتور محاسبه می‌شود.\n\nمتن اصلی رمزنگاری شده و فقط بستهٔ رمز‌شده ارسال خواهد شد.")
-                            .setNegativeButton("انصراف", (dialog, which) -> { })
-                            .setPositiveButton("ارسال پیامک‌ها", (dialog, which) -> sendEncryptedPacket(
-                                    phone, messageId, packet, frames, plaintext))
-                            .show();
+                    if (!activityStarted || isFinishing() || !key.equals(sessionPassphrase)) {
+                        messageInput.setEnabled(true);
+                        return;
+                    }
+                    sendEncryptedPacket(canonicalPhone, messageId, packet, frames, plaintext);
                 });
             } catch (Exception ex) {
                 runOnUiThread(() -> {
