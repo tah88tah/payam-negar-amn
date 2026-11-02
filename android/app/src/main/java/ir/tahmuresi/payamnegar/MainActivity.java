@@ -467,6 +467,7 @@ public final class MainActivity extends Activity {
     private void sendEncryptedPacket(String phone, String messageId, String packet,
                                      List<String> frames, String plaintext) {
         messageInput.setText("");
+        messageInput.setEnabled(false);
         worker.execute(() -> {
             MessageStore store = new MessageStore(this);
             try {
@@ -478,7 +479,10 @@ public final class MainActivity extends Activity {
             } finally {
                 store.close();
             }
-            runOnUiThread(this::renderChat);
+            runOnUiThread(() -> {
+                messageInput.setEnabled(true);
+                renderChat();
+            });
         });
     }
 
