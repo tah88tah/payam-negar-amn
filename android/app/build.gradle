@@ -1,0 +1,68 @@
+plugins {
+    id 'com.android.application'
+}
+
+def releaseStoreFile = project.findProperty('PAYAM_RELEASE_STORE_FILE') ?: System.getenv('PAYAM_RELEASE_STORE_FILE')
+def releaseStorePassword = project.findProperty('PAYAM_RELEASE_STORE_PASSWORD') ?: System.getenv('PAYAM_RELEASE_STORE_PASSWORD')
+def releaseKeyAlias = project.findProperty('PAYAM_RELEASE_KEY_ALIAS') ?: System.getenv('PAYAM_RELEASE_KEY_ALIAS')
+def releaseKeyPassword = project.findProperty('PAYAM_RELEASE_KEY_PASSWORD') ?: System.getenv('PAYAM_RELEASE_KEY_PASSWORD')
+def hasReleaseSigning = [releaseStoreFile, releaseStorePassword, releaseKeyAlias, releaseKeyPassword].every { it != null && !it.toString().trim().isEmpty() }
+
+android {
+    namespace 'ir.tahmuresi.payamnegar'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'ir.tahmuresi.payamnegar'
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName '1.0.0'
+        testInstrumentationRunner 'android.test.InstrumentationTestRunner'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            // Debug builds use the local Android debug key and a separate package ID.
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
+        }
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+}
+
+tasks.register('verifyPrivateReleaseSigning') {
+    doLast {
+        if (!hasReleaseSigning) {
+            throw new GradleException('Private release signing is not configured. Set PAYAM_RELEASE_STORE_FILE, PAYAM_RELEASE_STORE_PASSWORD, PAYAM_RELEASE_KEY_ALIAS, and PAYAM_RELEASE_KEY_PASSWORD in your local Gradle properties or environment.')
+        }
+    }
+}
+
+tasks.matching { it.name == 'preReleaseBuild' }.configureEach {
+    dependsOn tasks.named('verifyPrivateReleaseSigning')
+}

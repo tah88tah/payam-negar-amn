@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>پیام‌نگار امن — پیش‌نمایش رابط جمع‌وجور</title>
+<style>
+:root{--ink:#28332f;--accent:#a66a4c;--page:#f4f1eb;--muted:#717d75;--line:#dedbd3;--soft:#eeeae2;--out:#e5ede6}
+*{box-sizing:border-box}body{margin:0;background:#e9e6df;color:var(--ink);font-family:Tahoma,"Segoe UI",sans-serif;line-height:1.65}
+.wrap{max-width:430px;margin:18px auto;padding:0 10px}.phone{background:var(--page);border:1px solid var(--line);border-radius:22px;overflow:hidden;min-height:760px;display:flex;flex-direction:column;box-shadow:0 14px 38px #27342f18}
+header{background:#273431;color:#fff;padding:14px 16px;font-size:20px;font-weight:bold}.content{padding:10px;flex:1;display:flex;flex-direction:column;gap:9px}
+.contact{display:flex;align-items:center;gap:6px;padding:8px;background:white;border:1px solid var(--line);border-radius:12px}.contact button{height:42px;border:1px solid var(--line);border-radius:8px;background:var(--soft);color:var(--ink);font: bold 12px Tahoma;padding:0 8px;white-space:nowrap}.contact .add{width:42px;font-size:22px;padding:0}.contact input{min-width:0;flex:1;height:42px;border:1px solid var(--line);border-radius:8px;background:#faf9f6;padding:0 9px;font:12px Tahoma;text-align:left;direction:ltr}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px}.title{font-size:14px;font-weight:bold;margin-bottom:4px}.desc{font-size:10.5px;color:var(--muted)}input,textarea{font-family:Tahoma}.phrase{width:100%;height:42px;border:1px solid var(--line);border-radius:8px;background:#faf9f6;padding:0 10px;margin-top:8px;font-size:12px}.actions{display:flex;gap:7px;margin-top:8px}.actions button,.composer button{height:42px;flex:1;border:0;border-radius:8px;background:#273431;color:#fff;font:bold 12px Tahoma}.actions .lock{background:var(--soft);color:var(--ink);border:1px solid var(--line)}.state{font-size:10px;color:var(--muted);margin-top:6px}.chat{flex:1;min-height:150px}.empty{height:120px;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:11px}.composer{display:flex;gap:7px;padding:9px;background:white;border-top:1px solid var(--line)}.composer textarea{flex:1;resize:none;min-width:0;height:44px;border:1px solid var(--line);border-radius:8px;padding:8px;background:#faf9f6;font-size:12px}.composer button{flex:0 0 72px;height:44px;background:var(--accent)}
+@media(max-width:460px){body{background:var(--page)}.wrap{margin:0;padding:0}.phone{min-height:100dvh;border:0;border-radius:0}}
+</style></head>
+<body><main class="wrap"><div class="phone">
+<header>🔐 پیام‌نگار امن</header>
+<div class="content">
+<div class="contact"><button type="button">لیست مخاطبین</button><button class="add" type="button">+</button><input aria-label="شماره مستقیم" placeholder="شمارهٔ مستقیم با کد کشور"></div>
+<section class="card"><div class="title">بازکردن گفتگوی رمزنگاری‌شده</div><div class="desc">عبارت محرمانه باید جداگانه و خارج از پیام‌نگار تبادل شود.</div>
+<input class="phrase" type="password" placeholder="عبارت محرمانهٔ مشترک · حداقل ۱۲ نویسه">
+<div class="actions"><button>بازکردن گفتگو</button></div><div class="state">گفتگو قفل است.</div></section>
+<section class="card chat"><div class="title">گفتگو</div><div class="empty">هنوز پیامی ردوبدل نشده است.</div></section>
+</div>
+<footer class="composer"><textarea placeholder="پیام خودت را بنویس…"></textarea><button>ارسال</button></footer>
+</div></main></body></html>

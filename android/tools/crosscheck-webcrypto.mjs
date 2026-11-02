@@ -1,0 +1,18 @@
+import { webcrypto } from 'node:crypto';
+import fs from 'node:fs';
+const packet = JSON.parse(fs.readFileSync('build/java-packet.json', 'utf8'));
+const b64u = s => Buffer.from(s, 'base64url');
+const phrase = 'یک عبارت محرمانهٔ قوی برای دو نفر';
+const material = await webcrypto.subtle.importKey('raw', new TextEncoder().encode(phrase), 'PBKDF2', false, ['deriveKey']);
+const key = await webcrypto.subtle.deriveKey({name:'PBKDF2', salt:b64u(packet.salt), iterations:310000, hash:'SHA-256'}, material, {name:'AES-GCM', length:256}, false, ['decrypt','encrypt']);
+const decrypted = await webcrypto.subtle.decrypt({name:'AES-GCM', iv:b64u(packet.iv), tagLength:128}, key, b64u(packet.ct));
+const plaintext = new TextDecoder('utf-8', {fatal:true}).decode(decrypted);
+if (!plaintext.startsWith('سلام خواهرم')) throw new Error('WebCrypto could not decrypt Java envelope');
+const salt = webcrypto.getRandomValues(new Uint8Array(16));
+const iv = webcrypto.getRandomValues(new Uint8Array(12));
+const webKey = await webcrypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:310000, hash:'SHA-256'}, material, {name:'AES-GCM', length:256}, false, ['encrypt']);
+const webCipher = new Uint8Array(await webcrypto.subtle.encrypt({name:'AES-GCM', iv, tagLength:128}, webKey, new TextEncoder().encode('پیام ساخته‌شده با WebCrypto')));
+const encode = b => Buffer.from(b).toString('base64url');
+const webPacket = JSON.stringify({v:1, alg:'PBKDF2-SHA256+A256GCM', iter:310000, salt:encode(salt), iv:encode(iv), ct:encode(webCipher)});
+fs.writeFileSync('build/webcrypto-packet.json', webPacket);
+console.log('PASS: WebCrypto decrypted Java packet; reciprocal WebCrypto packet created for Java decrypt test.');
