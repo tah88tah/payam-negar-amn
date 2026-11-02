@@ -318,6 +318,7 @@ public final class MainActivity extends Activity {
                             : "گفتگو باز شد؛ هنوز پیامی برای آزمایش عبارت وجود ندارد.");
                     renderChat();
                     if (!hasSmsPermissions()) requestAppPermissions();
+                    else requestNotificationPermissionIfNeeded();
                 });
             } catch (Exception ex) {
                 runOnUiThread(() -> {
