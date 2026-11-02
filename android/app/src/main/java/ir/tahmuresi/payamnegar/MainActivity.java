@@ -221,6 +221,11 @@ public final class MainActivity extends Activity {
         if (contactPicker != null) contactPicker.setText(AppPrefs.peerName(this));
     }
 
+    private boolean hasSmsPermissions() {
+        return checkSelfPermission(Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED
+                && checkSelfPermission(Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_GRANTED;
+    }
+
     private void requestAppPermissions() {
         List<String> needed = new ArrayList<>();
         if (checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
@@ -229,25 +234,40 @@ public final class MainActivity extends Activity {
         if (checkSelfPermission(Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) {
             needed.add(Manifest.permission.RECEIVE_SMS);
         }
-        if (Build.VERSION.SDK_INT >= 33
-                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            needed.add(Manifest.permission.POST_NOTIFICATIONS);
-        }
         if (needed.isEmpty()) {
-            toast("مجوزهای لازم فعال هستند.");
+            toast("مجوزهای ارسال و دریافت پیامک فعال هستند.");
             return;
         }
         requestPermissions(needed.toArray(new String[0]), REQUEST_APP_PERMISSIONS);
+    }
+
+    private void showSmsPermissionHelp() {
+        new AlertDialog.Builder(this)
+                .setTitle("فعال‌سازی دسترسی پیامک")
+                .setMessage("برای کارکرد کامل پیام‌نگار، دسترسی ارسال و دریافت SMS لازم است. اگر Android این دسترسی‌ها را به‌دلیل نصب از خارج فروشگاه محدود کرده، ابتدا در صفحهٔ اطلاعات برنامه از منوی سه‌نقطه گزینهٔ «Allow restricted settings / اجازهٔ تنظیمات محدودشده» را فعال کن؛ سپس در بخش Permissions، دسترسی SMS را مجاز کن. این گزینه را فقط برای برنامه‌ای که به آن اعتماد داری فعال کن.")
+                .setNegativeButton("بعداً", null)
+                .setPositiveButton("رفتن به اطلاعات برنامه", (dialog, which) -> {
+                    Intent settings = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    settings.setData(android.net.Uri.parse("package:" + getPackageName()));
+                    try {
+                        startActivity(settings);
+                    } catch (RuntimeException ex) {
+                        toast("صفحهٔ تنظیمات برنامه باز نشد؛ از Settings گوشی وارد App info شو.");
+                    }
+                })
+                .show();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_APP_PERMISSIONS) {
-            boolean allGranted = grantResults.length > 0;
-            for (int result : grantResults) if (result != PackageManager.PERMISSION_GRANTED) allGranted = false;
-            if (allGranted) toast("دسترسی‌های درخواست‌شده فعال شدند.");
-            else toast("بعضی دسترسی‌ها فعال نشدند؛ تنظیمات مجوزهای برنامه را در Android بررسی کن.");
+            if (hasSmsPermissions()) {
+                toast("مجوزهای ارسال و دریافت پیامک فعال شدند.");
+            } else {
+                toast("مجوزهای SMS کامل نیستند؛ برای ادامه راهنمای فعال‌سازی را ببین.");
+                showSmsPermissionHelp();
+            }
         }
     }
 
@@ -311,8 +331,8 @@ public final class MainActivity extends Activity {
             toast("اول شمارهٔ مخاطب را ذخیره کن.");
             return;
         }
-        if (checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
-            toast("مجوز ارسال پیامک فعال نیست.");
+        if (!hasSmsPermissions()) {
+            toast("برای استفادهٔ کامل، مجوز ارسال و دریافت پیامک لازم است.");
             requestAppPermissions();
             return;
         }
