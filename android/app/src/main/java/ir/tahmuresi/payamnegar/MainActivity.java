@@ -275,12 +275,12 @@ public final class MainActivity extends Activity {
             } else {
                 toast("مجوزهای SMS کامل نیستند؛ برای ادامه راهنمای فعال‌سازی را ببین.");
                 showSmsPermissionHelp();
-            } else if (requestCode == 5102) {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    toast("اعلان‌های دریافت پیام فعال شدند.");
-                } else {
-                    toast("اعلان‌ها غیرفعال‌اند؛ دریافت SMS همچنان می‌تواند انجام شود، اما اعلان نمایش داده نمی‌شود.");
-                }
+            }
+        } else if (requestCode == 5102) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                toast("اعلان‌های دریافت پیام فعال شدند.");
+            } else {
+                toast("اعلان‌ها غیرفعال‌اند؛ دریافت SMS همچنان می‌تواند انجام شود، اما اعلان نمایش داده نمی‌شود.");
             }
         }
     }
