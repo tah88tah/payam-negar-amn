@@ -241,6 +241,13 @@ public final class MainActivity extends Activity {
         requestPermissions(needed.toArray(new String[0]), REQUEST_APP_PERMISSIONS);
     }
 
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= 33
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 5102);
+        }
+    }
+
     private void showSmsPermissionHelp() {
         new AlertDialog.Builder(this)
                 .setTitle("فعال‌سازی دسترسی پیامک")
@@ -264,9 +271,16 @@ public final class MainActivity extends Activity {
         if (requestCode == REQUEST_APP_PERMISSIONS) {
             if (hasSmsPermissions()) {
                 toast("مجوزهای ارسال و دریافت پیامک فعال شدند.");
+                requestNotificationPermissionIfNeeded();
             } else {
                 toast("مجوزهای SMS کامل نیستند؛ برای ادامه راهنمای فعال‌سازی را ببین.");
                 showSmsPermissionHelp();
+            } else if (requestCode == 5102) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    toast("اعلان‌های دریافت پیام فعال شدند.");
+                } else {
+                    toast("اعلان‌ها غیرفعال‌اند؛ دریافت SMS همچنان می‌تواند انجام شود، اما اعلان نمایش داده نمی‌شود.");
+                }
             }
         }
     }
@@ -303,6 +317,7 @@ public final class MainActivity extends Activity {
                             ? "گفتگو باز است؛ عبارت فقط تا زمان فعال‌بودن این صفحه در حافظه می‌ماند."
                             : "گفتگو باز شد؛ هنوز پیامی برای آزمایش عبارت وجود ندارد.");
                     renderChat();
+                    if (!hasSmsPermissions()) requestAppPermissions();
                 });
             } catch (Exception ex) {
                 runOnUiThread(() -> {
