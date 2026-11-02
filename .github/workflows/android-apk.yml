@@ -5,15 +5,14 @@ on:
   push:
     branches: [android-native-v1]
     paths:
-      - "payam-negar-android-v1-source-autolock-1.zip"
       - ".github/workflows/android-apk.yml"
       - "android/**"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  extract-test-build:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -27,34 +26,6 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Extract clean Android source into android/
-        run: |
-          set -euo pipefail
-          ARCHIVE="payam-negar-android-v1-source-autolock-1.zip"
-          if [ -f "$ARCHIVE" ]; then
-            rm -rf /tmp/payam-negar-extract
-            mkdir -p /tmp/payam-negar-extract android
-            unzip -q "$ARCHIVE" -d /tmp/payam-negar-extract
-            SOURCE="/tmp/payam-negar-extract/payam-negar-android-v1"
-            test -f "$SOURCE/settings.gradle"
-            find android -mindepth 1 -maxdepth 1 -exec rm -rf {} +
-            rsync -a --exclude='build/' --exclude='*.class' --exclude='android-javac-errors.txt' "$SOURCE/" android/
-            rm -rf android/build android/app/build
-            find android -type f -name '*.class' -delete
-            rm "$ARCHIVE"
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add android
-            git add -u "$ARCHIVE" || true
-            git commit -m "Add clean native Android source" || echo "No source changes to commit"
-            git push origin android-native-v1
-          else
-            echo "ZIP already extracted; using committed android/ source."
-            test -f android/settings.gradle
-          fi
-          test -f android/app/src/main/AndroidManifest.xml
-          test -f android/tools/run-pure-tests.sh
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -67,11 +38,9 @@ jobs:
       - name: Configure Android SDK
         run: |
           set -euo pipefail
-          echo "ANDROID_HOME=${ANDROID_HOME:-}"
           test -n "${ANDROID_HOME:-}"
-          test -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" || test -x "$ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager"
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -path '*/bin/sdkmanager' -type f | sort | tail -n 1)"
-          echo "Using $SDKMANAGER"
+          test -n "$SDKMANAGER"
           "$SDKMANAGER" --install "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
       - name: Set up Gradle
