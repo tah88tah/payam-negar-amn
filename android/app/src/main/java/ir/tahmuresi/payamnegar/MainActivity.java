@@ -337,18 +337,9 @@ public final class MainActivity extends Activity {
 
     private void showSmsPermissionHelp() {
         new AlertDialog.Builder(this)
-                .setTitle("فعال‌سازی دسترسی پیامک")
-                .setMessage("برای کارکرد کامل پیام‌نگار، دسترسی ارسال و دریافت SMS لازم است. اگر Android این دسترسی‌ها را به‌دلیل نصب از خارج فروشگاه محدود کرده، ابتدا در صفحهٔ اطلاعات برنامه از منوی سه‌نقطه گزینهٔ «Allow restricted settings / اجازهٔ تنظیمات محدودشده» را فعال کن؛ سپس در بخش Permissions، دسترسی SMS را مجاز کن. این گزینه را فقط برای برنامه‌ای که به آن اعتماد داری فعال کن.")
-                .setNegativeButton("بعداً", null)
-                .setPositiveButton("رفتن به اطلاعات برنامه", (dialog, which) -> {
-                    Intent settings = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    settings.setData(android.net.Uri.parse("package:" + getPackageName()));
-                    try {
-                        startActivity(settings);
-                    } catch (RuntimeException ex) {
-                        toast("صفحهٔ تنظیمات برنامه باز نشد؛ از Settings گوشی وارد App info شو.");
-                    }
-                })
+                .setTitle("دسترسی پیامک فعال نیست")
+                .setMessage("بدون مجوز ارسال و دریافت پیامک، ارسال و دریافت پیام‌های رمزنگاری‌شده ممکن نیست. می‌توانی فعلاً از برنامه خارج شوی یا هر زمان خواستی وضعیت مجوزها را از تنظیمات خود Android تغییر بدهی.")
+                .setPositiveButton("متوجه شدم", null)
                 .show();
     }
 
@@ -360,7 +351,7 @@ public final class MainActivity extends Activity {
                 toast("مجوزهای ارسال و دریافت پیامک فعال شدند.");
                 requestNotificationPermissionIfNeeded();
             } else {
-                toast("مجوزهای SMS کامل نیستند؛ برای ادامه راهنمای فعال‌سازی را ببین.");
+                toast("مجوزهای پیامک داده نشدند؛ قابلیت ارسال و دریافت SMS غیرفعال است.");
                 showSmsPermissionHelp();
             }
         } else if (requestCode == REQUEST_NOTIFICATION_PERMISSION) {
